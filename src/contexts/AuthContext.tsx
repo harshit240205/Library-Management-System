@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser({
             id: session.user.id,
             email: session.user.email || '',
-            role: userData?.role || 'student',
+            role: (userData?.role as 'admin' | 'student') || 'student',
             name: userData?.name,
             studentId: userData?.student_id
           });
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser({
             id: session.user.id,
             email: session.user.email || '',
-            role: userData?.role || 'student',
+            role: (userData?.role as 'admin' | 'student') || 'student',
             name: userData?.name,
             studentId: userData?.student_id
           });
