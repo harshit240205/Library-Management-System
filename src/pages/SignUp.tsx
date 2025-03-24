@@ -14,11 +14,13 @@ import { Book, Loader2 } from 'lucide-react';
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+  name: z.string().optional(),
+  studentId: z.string().optional(),
 });
 
-const Login = () => {
+const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -26,16 +28,18 @@ const Login = () => {
     defaultValues: {
       email: '',
       password: '',
+      name: '',
+      studentId: '',
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      await signIn(values.email, values.password);
-      // Redirection will be handled by the AuthContext
+      await signUp(values.email, values.password, values.name, values.studentId);
+      navigate('/login');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Sign up error:', error);
       setIsLoading(false);
     }
   };
@@ -47,17 +51,17 @@ const Login = () => {
           <div className="rounded-full bg-primary/10 p-3">
             <Book className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="mt-4 font-display text-3xl font-bold tracking-tight">Welcome to LibraryHub</h1>
+          <h1 className="mt-4 font-display text-3xl font-bold tracking-tight">Create an Account</h1>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            Sign in to access the library management system
+            Sign up to access the library management system
           </p>
         </div>
 
         <Card className="glass-panel">
           <CardHeader>
-            <CardTitle className="text-xl">Sign in</CardTitle>
+            <CardTitle className="text-xl">Sign up</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account
+              Enter your details to create an account
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -89,34 +93,51 @@ const Login = () => {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="studentId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Student ID (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="S12345" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
+                      Creating account...
                     </>
                   ) : (
-                    "Sign in"
+                    "Create Account"
                   )}
                 </Button>
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex justify-center">
             <div className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary underline-offset-4 hover:underline">
-                Sign up
+              Already have an account?{" "}
+              <Link to="/login" className="text-primary underline-offset-4 hover:underline">
+                Sign in
               </Link>
-            </div>
-            <div className="text-center text-sm text-muted-foreground">
-              <Button variant="link" className="p-0 h-auto" onClick={() => form.setValue('email', 'admin@library.com')}>
-                Use Admin Demo
-              </Button>
-              {' | '}
-              <Button variant="link" className="p-0 h-auto" onClick={() => form.setValue('email', 'student@library.com')}>
-                Use Student Demo
-              </Button>
             </div>
           </CardFooter>
         </Card>
@@ -125,4 +146,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;

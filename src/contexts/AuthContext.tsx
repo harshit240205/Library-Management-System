@@ -1,8 +1,17 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, User } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+
+export type User = {
+  id: string;
+  email: string;
+  role: 'admin' | 'student';
+  name?: string;
+  studentId?: string;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +19,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
+  signUp: (email: string, password: string, name?: string, studentId?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,6 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             name: userData?.name,
             studentId: userData?.student_id
           });
+          
+          // Redirect based on role
+          if (userData?.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/student');
+          }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           navigate('/login');
@@ -102,6 +119,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signUp = async (email: string, password: string, name?: string, studentId?: string) => {
+    try {
+      setLoading(true);
+      const { error, data } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            name,
+            student_id: studentId
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Registration successful!",
+        description: "Your account has been created.",
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Error signing up",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -122,7 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{ 
       user, 
       loading, 
-      signIn, 
+      signIn,
+      signUp, 
       signOut,
       isAdmin: user?.role === 'admin'
     }}>
