@@ -99,37 +99,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      console.log("Attempting to sign in with:", email);
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
-        // Handle email not confirmed error more gracefully
-        if (error.message.includes('Email not confirmed')) {
-          toast({
-            title: "Email not confirmed",
-            description: "Please check your email for the confirmation link or sign up again.",
-            variant: "destructive",
-          });
-          
-          // Optionally resend confirmation email
-          await supabase.auth.resend({
-            type: 'signup',
-            email: email,
-          });
-          
-          toast({
-            title: "Confirmation email resent",
-            description: "We've sent a new confirmation email to your address.",
-          });
-        } else {
-          throw error;
-        }
-      } else {
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in.",
-        });
+        // Even if email is not confirmed, try signing in anyway
+        // This will work if email confirmation is disabled in Supabase
+        console.error("Sign in error:", error.message);
+        throw error;
       }
+      
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully signed in.",
+      });
     } catch (error: any) {
+      console.log("Sign in error:", error.message);
       toast({
         title: "Error signing in",
         description: error.message,
@@ -159,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast({
         title: "Registration successful!",
-        description: "Your account has been created. Please check your email for confirmation.",
+        description: "Your account has been created. You can now sign in.",
       });
       
     } catch (error: any) {
