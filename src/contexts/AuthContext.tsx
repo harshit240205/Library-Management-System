@@ -99,14 +99,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       
-      if (error) throw error;
-      
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
-      });
+      if (error) {
+        // Handle email not confirmed error more gracefully
+        if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email not confirmed",
+            description: "Please check your email for the confirmation link or sign up again.",
+            variant: "destructive",
+          });
+          
+          // Optionally resend confirmation email
+          await supabase.auth.resend({
+            type: 'signup',
+            email: email,
+          });
+          
+          toast({
+            title: "Confirmation email resent",
+            description: "We've sent a new confirmation email to your address.",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully signed in.",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error signing in",
@@ -137,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast({
         title: "Registration successful!",
-        description: "Your account has been created.",
+        description: "Your account has been created. Please check your email for confirmation.",
       });
       
     } catch (error: any) {
