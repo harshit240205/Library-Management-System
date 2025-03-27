@@ -4,13 +4,35 @@ import { User } from '@/types/auth';
 
 export async function fetchUserProfile(userId: string): Promise<User | null> {
   try {
-    const { data: userData } = await supabase
+    console.log("Fetching user profile for ID:", userId);
+    
+    // First check if the profile exists
+    const { data: userData, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
       
-    if (!userData) return null;
+    if (error) {
+      console.error("Error fetching profile:", error.message);
+      
+      // If profile doesn't exist, try to get basic user data from auth
+      const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+      if (authUser?.user) {
+        console.log("Retrieved user from auth:", authUser.user);
+        return {
+          id: userId,
+          email: authUser.user.email || '',
+          role: 'student', // Default role
+          name: authUser.user.user_metadata?.name,
+          studentId: authUser.user.user_metadata?.student_id
+        };
+      }
+      
+      return null;
+    }
+    
+    console.log("User profile found:", userData);
     
     return {
       id: userId,

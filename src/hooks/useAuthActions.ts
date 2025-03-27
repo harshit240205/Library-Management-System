@@ -21,12 +21,14 @@ export function useAuthActions() {
         throw error;
       }
       
+      console.log("Sign in successful:", data);
+      
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
       });
     } catch (error: any) {
-      console.log("Sign in error:", error.message);
+      console.error("Sign in error:", error.message);
       toast({
         title: "Error signing in",
         description: error.message,
@@ -41,6 +43,8 @@ export function useAuthActions() {
   const signUp = async (email: string, password: string, name?: string, studentId?: string) => {
     try {
       setLoading(true);
+      console.log("Attempting to sign up with:", email);
+      
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -52,14 +56,23 @@ export function useAuthActions() {
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Sign up error:", error.message);
+        throw error;
+      }
+      
+      console.log("Sign up successful:", data);
       
       toast({
         title: "Registration successful!",
-        description: "Your account has been created. You can now sign in.",
+        description: "Your account has been created. Please sign in with your credentials.",
       });
       
+      // Navigate to login page after successful signup
+      navigate('/login');
+      
     } catch (error: any) {
+      console.error("Sign up error:", error.message);
       toast({
         title: "Error signing up",
         description: error.message,
@@ -79,6 +92,7 @@ export function useAuthActions() {
         description: "You've been successfully signed out.",
       });
     } catch (error: any) {
+      console.error("Sign out error:", error.message);
       toast({
         title: "Error signing out",
         description: error.message,

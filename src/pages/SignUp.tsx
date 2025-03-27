@@ -36,10 +36,11 @@ const SignUp = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
+      console.log("Submitting signup form with:", values.email);
       await signUp(values.email, values.password, values.name, values.studentId);
-      navigate('/login');
+      // Redirection will be handled by useAuthActions
     } catch (error) {
-      console.error('Sign up error:', error);
+      console.error('Signup error caught in component:', error);
       setIsLoading(false);
     }
   };

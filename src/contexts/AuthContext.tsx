@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User, AuthContextType } from '@/types/auth';
 import { useAuthActions } from '@/hooks/useAuthActions';
 import { fetchUserProfile } from '@/utils/userProfile';
+import { useToast } from '@/hooks/use-toast';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -12,21 +13,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { signIn, signUp, signOut: authSignOut, loading: actionLoading } = useAuthActions();
 
   useEffect(() => {
+    console.log("AuthProvider initializing...");
+    
     // Check active session
     const checkSession = async () => {
       try {
+        console.log("Checking for existing session...");
         const { data: { session } } = await supabase.auth.getSession();
+        
         if (session) {
+          console.log("Session found:", session.user.id);
           const userData = await fetchUserProfile(session.user.id);
+          
           if (userData) {
+            console.log("User data retrieved:", userData);
             setUser(userData);
+          } else {
+            console.log("No user data found for session");
           }
+        } else {
+          console.log("No active session found");
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error fetching initial session:', error);
       } finally {
         setLoading(false);
       }
@@ -37,23 +50,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
+        
         if (event === 'SIGNED_IN' && session) {
-          const userData = await fetchUserProfile(session.user.id);
-          
-          if (userData) {
-            setUser(userData);
+          try {
+            const userData = await fetchUserProfile(session.user.id);
             
-            // Redirect based on role
-            if (userData.role === 'admin') {
-              navigate('/admin');
+            if (userData) {
+              console.log("User data retrieved on auth change:", userData);
+              setUser(userData);
+              
+              // Redirect based on role
+              if (userData.role === 'admin') {
+                navigate('/admin');
+              } else {
+                navigate('/student');
+              }
             } else {
-              navigate('/student');
+              console.error("Failed to get user data after sign in");
+              toast({
+                title: "Error",
+                description: "Failed to retrieve your user profile. Please try again.",
+                variant: "destructive"
+              });
             }
+          } catch (error) {
+            console.error("Error processing sign in:", error);
           }
         } else if (event === 'SIGNED_OUT') {
+          console.log("User signed out");
           setUser(null);
           navigate('/login');
         }
+        
         setLoading(false);
       }
     );
@@ -61,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleSignOut = async () => {
     await authSignOut();
