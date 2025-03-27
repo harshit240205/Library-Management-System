@@ -27,6 +27,8 @@ export function useAuthActions() {
         title: "Welcome back!",
         description: "You've successfully signed in.",
       });
+      
+      return data;
     } catch (error: any) {
       console.error("Sign in error:", error.message);
       toast({
@@ -86,7 +88,9 @@ export function useAuthActions() {
 
   const signOut = async () => {
     try {
+      setLoading(true);
       await supabase.auth.signOut();
+      
       toast({
         title: "Signed out",
         description: "You've been successfully signed out.",
@@ -98,6 +102,8 @@ export function useAuthActions() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 

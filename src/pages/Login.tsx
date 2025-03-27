@@ -18,7 +18,7 @@ const formSchema = z.object({
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -33,12 +33,16 @@ const Login = () => {
     try {
       setIsLoading(true);
       await signIn(values.email, values.password);
-      // Redirection will be handled by the AuthContext
+      // Auth context will handle redirect after successful login
     } catch (error) {
       console.error('Login error:', error);
+    } finally {
       setIsLoading(false);
     }
   };
+
+  // Combined loading state from local and auth context
+  const loading = isLoading || authLoading;
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
@@ -89,8 +93,8 @@ const Login = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Signing in...

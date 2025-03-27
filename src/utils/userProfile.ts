@@ -17,15 +17,16 @@ export async function fetchUserProfile(userId: string): Promise<User | null> {
       console.error("Error fetching profile:", error.message);
       
       // If profile doesn't exist, try to get basic user data from auth
-      const { data: authUser } = await supabase.auth.admin.getUserById(userId);
-      if (authUser?.user) {
-        console.log("Retrieved user from auth:", authUser.user);
+      const { data: authData } = await supabase.auth.getUser();
+      
+      if (authData && authData.user) {
+        console.log("Retrieved user from auth session:", authData.user);
         return {
           id: userId,
-          email: authUser.user.email || '',
+          email: authData.user.email || '',
           role: 'student', // Default role
-          name: authUser.user.user_metadata?.name,
-          studentId: authUser.user.user_metadata?.student_id
+          name: authData.user.user_metadata?.name,
+          studentId: authData.user.user_metadata?.student_id
         };
       }
       
