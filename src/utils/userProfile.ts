@@ -6,6 +6,26 @@ export async function fetchUserProfile(userId: string): Promise<User | null> {
   try {
     console.log("Fetching user profile for ID:", userId);
     
+    // For demo accounts, return hardcoded profiles
+    if (userId === 'demo-admin-id') {
+      console.log("Returning demo admin profile");
+      return {
+        id: 'demo-admin-id',
+        email: 'admin@library.com',
+        role: 'admin',
+        name: 'Admin User'
+      };
+    } else if (userId === 'demo-student-id') {
+      console.log("Returning demo student profile");
+      return {
+        id: 'demo-student-id',
+        email: 'student@library.com',
+        role: 'student',
+        name: 'Student User',
+        studentId: 'STU12345'
+      };
+    }
+    
     // First check if the profile exists
     const { data: userData, error } = await supabase
       .from('profiles')

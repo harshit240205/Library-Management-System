@@ -16,6 +16,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const { signIn, signUp, signOut: authSignOut, loading: actionLoading } = useAuthActions();
 
+  // Special handling for demo accounts
+  const handleDemoLogin = async (email: string, password: string) => {
+    if (email === 'admin@library.com' && password === 'password123') {
+      const demoAdminUser: User = {
+        id: 'demo-admin-id',
+        email: 'admin@library.com',
+        role: 'admin',
+        name: 'Admin User'
+      };
+      setUser(demoAdminUser);
+      
+      toast({
+        title: "Demo Admin Login",
+        description: "You're now logged in as an admin demo user.",
+      });
+      
+      navigate('/admin');
+      return true;
+    } 
+    else if (email === 'student@library.com' && password === 'password123') {
+      const demoStudentUser: User = {
+        id: 'demo-student-id',
+        email: 'student@library.com',
+        role: 'student',
+        name: 'Student User',
+        studentId: 'STU12345'
+      };
+      setUser(demoStudentUser);
+      
+      toast({
+        title: "Demo Student Login",
+        description: "You're now logged in as a student demo user.",
+      });
+      
+      navigate('/student');
+      return true;
+    }
+    
+    return false;
+  };
+
   useEffect(() => {
     console.log("AuthProvider initializing...");
     
@@ -104,7 +145,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [navigate, toast]);
 
+  // Override the signIn method to handle demo accounts
+  const handleSignIn = async (email: string, password: string) => {
+    // Try demo login first
+    const isDemoLogin = await handleDemoLogin(email, password);
+    if (isDemoLogin) {
+      return;
+    }
+    
+    // Fall back to normal sign in
+    return await signIn(email, password);
+  };
+
   const handleSignOut = async () => {
+    // Special handling for demo accounts
+    if (user && (user.id === 'demo-admin-id' || user.id === 'demo-student-id')) {
+      setUser(null);
+      navigate('/login');
+      toast({
+        title: "Signed out",
+        description: "You've been successfully signed out of the demo account.",
+      });
+      return;
+    }
+    
     await authSignOut();
   };
 
@@ -112,7 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{ 
       user, 
       loading: loading || actionLoading, 
-      signIn,
+      signIn: handleSignIn,
       signUp, 
       signOut: handleSignOut,
       isAdmin: user?.role === 'admin'

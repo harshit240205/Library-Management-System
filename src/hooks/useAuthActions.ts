@@ -14,6 +14,7 @@ export function useAuthActions() {
     try {
       setLoading(true);
       console.log("Attempting to sign in with:", email);
+      
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
@@ -33,7 +34,7 @@ export function useAuthActions() {
       console.error("Sign in error:", error.message);
       toast({
         title: "Error signing in",
-        description: error.message,
+        description: error.message || "Invalid login credentials. Please try again.",
         variant: "destructive",
       });
       throw error;
@@ -46,6 +47,16 @@ export function useAuthActions() {
     try {
       setLoading(true);
       console.log("Attempting to sign up with:", email);
+      
+      // First check if this is a demo account
+      if (email === 'admin@library.com' || email === 'student@library.com') {
+        toast({
+          title: "Demo Account",
+          description: "This is a demo account. Please use the 'Use Admin Demo' or 'Use Student Demo' buttons on the login page.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       const { error, data } = await supabase.auth.signUp({ 
         email, 

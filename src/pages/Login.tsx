@@ -41,6 +41,16 @@ const Login = () => {
     }
   };
 
+  const useAdminDemo = () => {
+    form.setValue('email', 'admin@library.com');
+    form.setValue('password', 'password123');
+  };
+
+  const useStudentDemo = () => {
+    form.setValue('email', 'student@library.com');
+    form.setValue('password', 'password123');
+  };
+
   // Combined loading state from local and auth context
   const loading = isLoading || authLoading;
 
@@ -114,11 +124,11 @@ const Login = () => {
               </Link>
             </div>
             <div className="text-center text-sm text-muted-foreground">
-              <Button variant="link" className="p-0 h-auto" onClick={() => form.setValue('email', 'admin@library.com')}>
+              <Button variant="link" className="p-0 h-auto" onClick={useAdminDemo}>
                 Use Admin Demo
               </Button>
               {' | '}
-              <Button variant="link" className="p-0 h-auto" onClick={() => form.setValue('email', 'student@library.com')}>
+              <Button variant="link" className="p-0 h-auto" onClick={useStudentDemo}>
                 Use Student Demo
               </Button>
             </div>
