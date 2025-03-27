@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { Book, LogOut, Menu, X } from 'lucide-react';
+import { Book, LogOut, Menu, User, X, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -27,13 +27,14 @@ const Navbar = () => {
     ? [
         { name: 'Dashboard', path: '/admin' },
         { name: 'Manage Books', path: '/admin/books' },
-        { name: 'Students', path: '/admin/students' },
+        { name: 'My Account', path: '/admin/account' },
       ]
     : [
         { name: 'Home', path: '/student' },
         { name: 'Books', path: '/student/books' },
         { name: 'My Borrows', path: '/student/borrows' },
         { name: 'Pay Fine', path: '/student/pay-fine' },
+        { name: 'My Account', path: '/student/account' },
       ];
 
   return (
@@ -50,7 +51,7 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-6 md:flex">
-          {user && (
+          {user ? (
             <>
               {navLinks.map((link) => (
                 <Link
@@ -76,11 +77,26 @@ const Navbar = () => {
                 <span>Sign out</span>
               </Button>
             </>
-          )}
-          {!user && (
-            <Button asChild size="sm">
-              <Link to="/login">Sign In</Link>
-            </Button>
+          ) : (
+            <>
+              <Link
+                to="/learn-more"
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary",
+                  isActive("/learn-more")
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              >
+                Learn More
+              </Link>
+              <Button asChild size="sm" variant="outline" className="mr-2">
+                <Link to="/signup">Sign Up</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link to="/login">Sign In</Link>
+              </Button>
+            </>
           )}
         </div>
 
@@ -105,7 +121,7 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="container animate-slide-up pb-6 md:hidden">
           <div className="flex flex-col space-y-4">
-            {user && (
+            {user ? (
               <>
                 {navLinks.map((link) => (
                   <Link
@@ -131,13 +147,31 @@ const Navbar = () => {
                   <span>Sign out</span>
                 </Button>
               </>
-            )}
-            {!user && (
-              <Button asChild className="w-full">
-                <Link to="/login" onClick={closeMenu}>
-                  Sign In
+            ) : (
+              <>
+                <Link
+                  to="/learn-more"
+                  onClick={closeMenu}
+                  className={cn(
+                    "text-sm font-medium py-2 transition-colors hover:text-primary",
+                    isActive("/learn-more")
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  Learn More
                 </Link>
-              </Button>
+                <Button asChild className="w-full mb-2">
+                  <Link to="/signup" onClick={closeMenu}>
+                    Sign Up
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full">
+                  <Link to="/login" onClick={closeMenu}>
+                    Sign In
+                  </Link>
+                </Button>
+              </>
             )}
           </div>
         </div>

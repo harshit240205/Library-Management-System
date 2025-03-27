@@ -14,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn, signUp, signOut: authSignOut, loading: actionLoading } = useAuthActions();
+  const { signIn: authSignIn, signUp, signOut: authSignOut, loading: actionLoading } = useAuthActions();
 
   // Special handling for demo accounts
   const handleDemoLogin = async (email: string, password: string) => {
@@ -146,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [navigate, toast]);
 
   // Override the signIn method to handle demo accounts
-  const handleSignIn = async (email: string, password: string) => {
+  const handleSignIn = async (email: string, password: string): Promise<void> => {
     // Try demo login first
     const isDemoLogin = await handleDemoLogin(email, password);
     if (isDemoLogin) {
@@ -154,7 +154,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Fall back to normal sign in
-    return await signIn(email, password);
+    try {
+      await authSignIn(email, password);
+    } catch (error) {
+      console.error('Error during sign in:', error);
+      throw error;
+    }
   };
 
   const handleSignOut = async () => {

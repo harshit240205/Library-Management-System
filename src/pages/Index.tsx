@@ -34,7 +34,7 @@ const Index = () => {
             <Link to="/login">Get Started</Link>
           </Button>
           <Button variant="outline" size="lg" asChild>
-            <Link to="/about">Learn More</Link>
+            <Link to="/learn-more">Learn More</Link>
           </Button>
         </div>
       </div>

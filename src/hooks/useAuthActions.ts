@@ -29,7 +29,6 @@ export function useAuthActions() {
         description: "You've successfully signed in.",
       });
       
-      return data;
     } catch (error: any) {
       console.error("Sign in error:", error.message);
       toast({
